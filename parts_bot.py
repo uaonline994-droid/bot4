@@ -1,6 +1,6 @@
 """
 Персональний Telegram-бот для пошуку деталей (OLX, Пром/Bigl, веб-пошук).
-Встанови:  pip install requests beautifulsoup4
+Встанови:  pip install requests beautifulsoup4 flask
 Токен (від @BotFather) задай ОДНИМ зі способів:
   1) змінна середовища BOT_TOKEN
   2) файл bot_token.txt поруч зі скриптом
@@ -11,6 +11,7 @@
 import re, json, time, threading, html, urllib.parse, os
 import requests
 from bs4 import BeautifulSoup
+from flask import Flask
 
 def _load_token():
     t = os.getenv("BOT_TOKEN", "9241435587:AAGZjuoRu1u-czs-Xlatg8CgIguGpXhzeog").strip()
@@ -347,7 +348,22 @@ def on_text(t):
     else:
         menu()
 
+# ================= мінімальний веб-сервер (для health-check хостингу) =================
+web = Flask(__name__)
+
+@web.route("/")
+@web.route("/<path:_>")
+def ok(_=None):
+    return "OK"
+
+def run_web():
+    port = int(os.getenv("PORT", "10000"))
+    import logging
+    logging.getLogger("werkzeug").setLevel(logging.ERROR)
+    web.run(host="0.0.0.0", port=port, threaded=True, use_reloader=False)
+
 def main():
+    threading.Thread(target=run_web, daemon=True).start()
     # скидаємо можливий вебхук, інакше getUpdates не отримує повідомлень
     tg("deleteWebhook", drop_pending_updates=False)
     me = tg("getMe")
