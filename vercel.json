@@ -1,0 +1,12 @@
+{
+  "regions": ["fra1"],
+  "functions": {
+    "api/index.py": { "maxDuration": 60 }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index" }
+  ],
+  "crons": [
+    { "path": "/api/cron", "schedule": "0 6 * * *" }
+  ]
+}
